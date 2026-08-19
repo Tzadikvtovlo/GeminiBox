@@ -1,6 +1,6 @@
 # GeminiBox
 
-סקריפט Tampermonkey לצמצום בלוקי הקוד של [ג'מיני](https://gemini.google.com/app/).
+סקריפט [Tampermonkey](https://www.tampermonkey.net/) לצמצום בלוקי הקוד של [ג'מיני](https://gemini.google.com/app/).
 
 להתקנה לחץ:
 
