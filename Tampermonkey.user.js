@@ -1,15 +1,14 @@
 // ==UserScript==
 // @name         מצמצם בלוקי קוד בג'מיני
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  GeminiBox
 // @author       צדיק וטוב לו וההודי של gemini
 // @match        https://gemini.google.com/*
 // @updateURL    https://raw.githubusercontent.com/Tzadikvtovlo/GeminiBox/main/Tampermonkey.user.js
 // @downloadURL  https://raw.githubusercontent.com/Tzadikvtovlo/GeminiBox/main/Tampermonkey.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=gemini.google.com
-// @grant        none
-
+// @grant        GM_addStyle
 // ==/UserScript==
 
 (function() {
