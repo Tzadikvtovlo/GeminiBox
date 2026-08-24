@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         מצמצם בלוקי קוד בג'מיני
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  GeminiBox
 // @author       צדיק וטוב לו וההודי של gemini
 // @match        https://gemini.google.com/*
@@ -14,7 +14,7 @@
 (function() {
     'use strict';
 
-    const MAX_HEIGHT = '300px';
+    const MAX_HEIGHT = '220px';
 
     GM_addStyle(`
         .custom-code-container {
