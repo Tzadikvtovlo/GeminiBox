@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         מצמצם בלוקי קוד בג'מיני
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  GeminiBox
 // @author       צדיק וטוב לו וההודי של gemini
 // @match        https://gemini.google.com/*
@@ -30,11 +30,12 @@
             overflow-y: visible !important;
         }
 
-        /* Floating Button - Positioned absolutely within our own wrapper */
+        /* Floating Button - Positioned absolutely at the bottom center */
         .custom-toggle-btn {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 100;
             background-color: var(--bard-color-surface-container-high, #444746);
             color: var(--bard-color-on-surface, #e3e3e3);
