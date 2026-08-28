@@ -1,0 +1,33 @@
+PushBox - רישיון שימוש אישי בלבד
+
+כל הזכויות שמורות לצדיק וטוב לו.
+
+מותר אך ורק שימוש לצורך שימוש אישי (Personal Use).
+
+חל איסור על כל אחד מהדברים הבאים - ללא רשות מפורשת בכתב מהיוצר:
+
+שימוש מסחרי מכל סוג שהוא בקוד או בחלקים ממנו.
+
+שינוי, עריכה, יצירת יצירות נגזרות או התאמה של הקוד.
+
+הפצה מחדש של הקוד (במקורו או בשינוי כלשהו) לצדדים שלישיים.
+
+חובה לשמור על הודעת זכויות היוצרים המקורית והקרדיט ליוצר בכל העת.
+
+***
+
+PushBox - Personal Use Only License
+
+All rights reserved to Tzadikvtovlo.
+
+Use for personal use only is permitted.
+
+Any of the following is prohibited - without express written permission from the creator:
+
+Commercial use of any kind of the code or parts thereof.
+
+Modification, editing, creation of derivative works or adaptation of the code.
+
+Redistribution of the code (in its original form or with any modification) to third parties.
+
+The original copyright notice and credit to the creator must be maintained at all times.
