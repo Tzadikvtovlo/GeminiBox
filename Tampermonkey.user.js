@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         מצמצם בלוקי קוד בג'מיני
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  GeminiBox
 // @author       צדיק וטוב לו וההודי של gemini
 // @match        https://gemini.google.com/*
@@ -14,7 +14,8 @@
 (function() {
     'use strict';
 
-    const MAX_HEIGHT = '220px';
+    const MAX_HEIGHT_PX = 220;
+    const MAX_HEIGHT = `${MAX_HEIGHT_PX}px`;
 
     GM_addStyle(`
         .custom-code-container {
@@ -80,25 +81,23 @@
     `);
 
     function processCodeBlocks() {
-        // Target the <pre> elements directly instead of hunting for the header
         const pres = document.querySelectorAll('pre:not([data-custom-wrapped])');
 
         pres.forEach(pre => {
             pre.dataset.customWrapped = 'true';
-            pre.classList.add('custom-code-collapsed');
 
-            // 1. Create a wrapper to isolate our DOM changes from Gemini's React/Angular engine
+            // 1. יצירת עטיפה
             const wrapper = document.createElement('div');
             wrapper.className = 'custom-code-container';
 
-            // 2. Insert wrapper before the pre element, then move the pre inside it
             pre.parentNode.insertBefore(wrapper, pre);
             wrapper.appendChild(pre);
 
-            // 3. Create the standalone floating button
+            // 2. יצירת הכפתור - מוסתר כברירת מחדל
             const toggleBtn = document.createElement('button');
             toggleBtn.className = 'custom-toggle-btn';
             toggleBtn.innerText = 'הרחב קוד';
+            toggleBtn.style.display = 'none';
 
             let isExpanded = false;
 
@@ -118,11 +117,27 @@
                 }
             });
 
-            // 4. Attach the button inside our controlled wrapper
             wrapper.appendChild(toggleBtn);
+
+            // 3. מעקב אחר גובה הבלוק בזמן אמת (מעולה לקוד שנכתב בלייב על ידי ג'מיני)
+            const resizeObserver = new ResizeObserver(() => {
+                // בדיקה אם גובה התוכן בפועל גדול מהמקסימום המותר
+                if (pre.scrollHeight > MAX_HEIGHT_PX) {
+                    toggleBtn.style.display = 'block'; // הצגת הכפתור
+                    if (!isExpanded) {
+                        pre.classList.add('custom-code-collapsed');
+                    }
+                } else {
+                    toggleBtn.style.display = 'none'; // הסתרת הכפתור
+                    pre.classList.remove('custom-code-collapsed');
+                    pre.classList.remove('custom-code-expanded');
+                }
+            });
+
+            resizeObserver.observe(pre);
         });
     }
 
-    // Use a lightweight interval instead of MutationObserver to avoid race conditions with Gemini's rendering
+    // שימוש באינטרוול רק כדי ללכוד בלוקים חדשים שנוצרים
     setInterval(processCodeBlocks, 1000);
 })();
