@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GeminiBox
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.2
 // @description  מסגרת עבה ונוכחת, כפתורים לבנים ועבים בשורה אחת חלקה, והעלמה הרמטית של כפתורי ייצוא מיותרים.
 // @author       צדיק וטוב לו וההודי של gemini
 // @match        https://gemini.google.com/*
