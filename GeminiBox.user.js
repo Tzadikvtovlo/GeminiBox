@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         GeminiBox
 // @namespace    http://tampermonkey.net/
-// @version      2.3
-// @description  מסגרת עבה ונוכחת, כפתורים לבנים ועבים בשורה אחת חלקה, והעלמה הרמטית של כפתורי ייצוא מיותרים.
+// @version      2.4
+// @description  מסגרת עבה ונוכחת, כפתורים לבנים ועבים בשורה אחת חלקה, העלמה הרמטית של כפתורי ייצוא מיותרים, וטולטיפ אינטראקטיבי לשינוי שם קובץ.
 // @author       צדיק וטוב לו וההודי של gemini
 // @match        https://gemini.google.com/*
 // @updateURL    https://raw.githubusercontent.com/Tzadikvtovlo/GeminiBox/main/GeminiBox.user.js
@@ -63,6 +63,56 @@
             align-items: center !important;
         }
 
+        /* טולטיפ אינטראקטיבי לשינוי שם קובץ */
+        #gemini-filename-tooltip {
+            position: fixed;
+            z-index: 100000;
+            background: #1e1f20;
+            color: #e3e3e3;
+            border: 1px solid #444746;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-family: inherit;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            transform: translate(-50%, 4px);
+            white-space: nowrap;
+        }
+        #gemini-filename-tooltip.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, 0);
+        }
+        #gemini-filename-tooltip span {
+            font-size: 12px;
+            color: #c4c7c5;
+            user-select: none;
+            direction: rtl;
+        }
+        #gemini-filename-tooltip input {
+            background: #2b2c2f;
+            color: #ffffff;
+            border: 1px solid #525458;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 13px;
+            font-family: monospace;
+            outline: none;
+            min-width: 170px;
+            direction: ltr;
+            text-align: left;
+        }
+        #gemini-filename-tooltip input:focus {
+            border-color: #8ab4f8;
+            box-shadow: 0 0 0 1px #8ab4f8;
+        }
+
         /* הכפתור העולמי צף למטה */
         #gemini-ext-global-btn { position: fixed; bottom: 24px; right: 24px; z-index: 9999; background-color: rgba(52, 168, 83, 0.9); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 10px 16px; font-size: 14px; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transition: transform 0.2s, background-color 0.2s; backdrop-filter: blur(4px); direction: rtl; }
         #gemini-ext-global-btn:hover { transform: scale(1.05); background-color: rgba(52, 168, 83, 1); }
@@ -79,8 +129,106 @@
     function createExpandIcon() { const svg = createSvgElement('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: ICON_COLOR, 'stroke-width': ICON_STROKE_WIDTH, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }); svg.appendChild(createSvgElement('polyline', { points: '17 15 12 20 7 15' })); svg.appendChild(createSvgElement('polyline', { points: '7 9 12 4 17 9' })); return svg; }
     function createCollapseIcon() { const svg = createSvgElement('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: ICON_COLOR, 'stroke-width': ICON_STROKE_WIDTH, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }); svg.appendChild(createSvgElement('polyline', { points: '17 20 12 15 7 20' })); svg.appendChild(createSvgElement('polyline', { points: '7 4 12 9 17 4' })); return svg; }
 
+    // --- ניהול טולטיפ אינטראקטיבי לשינוי שם הקובץ ---
+    let tooltipEl = null;
+    let tooltipInput = null;
+    let activePreForTooltip = null;
+    let tooltipHideTimeout = null;
+
+    function initFilenameTooltip() {
+        if (tooltipEl || !document.body) return;
+        tooltipEl = document.createElement('div');
+        tooltipEl.id = 'gemini-filename-tooltip';
+
+        const label = document.createElement('span');
+        label.innerText = 'שם קובץ:';
+
+        tooltipInput = document.createElement('input');
+        tooltipInput.type = 'text';
+        tooltipInput.spellcheck = false;
+
+        tooltipEl.appendChild(label);
+        tooltipEl.appendChild(tooltipInput);
+
+        tooltipInput.addEventListener('input', () => {
+            if (activePreForTooltip) {
+                const val = tooltipInput.value.trim();
+                if (val) activePreForTooltip.dataset.customFilename = val;
+                else delete activePreForTooltip.dataset.customFilename;
+            }
+        });
+
+        tooltipInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                tooltipInput.blur();
+                hideFilenameTooltip();
+            }
+        });
+
+        tooltipInput.addEventListener('blur', () => {
+            scheduleHideFilenameTooltip();
+        });
+
+        tooltipEl.addEventListener('mouseenter', () => {
+            clearTimeout(tooltipHideTimeout);
+        });
+
+        tooltipEl.addEventListener('mouseleave', () => {
+            scheduleHideFilenameTooltip();
+        });
+
+        document.body.appendChild(tooltipEl);
+    }
+
+    function showFilenameTooltip(btn, pre) {
+        initFilenameTooltip();
+        if (!tooltipEl) return;
+        clearTimeout(tooltipHideTimeout);
+        activePreForTooltip = pre;
+        tooltipInput.value = getFilenameForBlock(pre);
+        tooltipEl.classList.add('visible');
+
+        const rect = btn.getBoundingClientRect();
+        const tooltipRect = tooltipEl.getBoundingClientRect();
+
+        let top = rect.top - tooltipRect.height - 8;
+        if (top < 10) {
+            top = rect.bottom + 8;
+        }
+
+        let left = rect.left + (rect.width / 2);
+        const halfWidth = tooltipRect.width / 2;
+        if (left - halfWidth < 10) {
+            left = halfWidth + 10;
+        } else if (left + halfWidth > window.innerWidth - 10) {
+            left = window.innerWidth - 10 - halfWidth;
+        }
+
+        tooltipEl.style.top = `${top}px`;
+        tooltipEl.style.left = `${left}px`;
+    }
+
+    function scheduleHideFilenameTooltip() {
+        clearTimeout(tooltipHideTimeout);
+        tooltipHideTimeout = setTimeout(() => {
+            if (tooltipInput && document.activeElement !== tooltipInput) {
+                hideFilenameTooltip();
+            }
+        }, 250);
+    }
+
+    function hideFilenameTooltip() {
+        if (tooltipEl) {
+            tooltipEl.classList.remove('visible');
+        }
+        activePreForTooltip = null;
+    }
+
     // --- פונקציות עזר ---
     function getFilenameForBlock(preElement) {
+        if (preElement && preElement.dataset.customFilename) {
+            return preElement.dataset.customFilename;
+        }
         let filename = 'code_snippet.txt';
         const regex = /([a-zA-Z0-9_\-]+\.(?:json|jsx|tsx|html|yaml|vue|svelte|cpp|css|java|py|js|ts|cs|txt|md|sh|yml|xml|php|rb|go|rs|sql|c|h))\b/ig;
         let container = preElement; while(container && !container.tagName.toLowerCase().includes('message') && !container.hasAttribute('data-message-id')) { if(container.parentElement) container = container.parentElement; else break; }
@@ -138,7 +286,7 @@
 
     // --- המנוע המרכזי ---
     function processCodeBlocks() {
-        try { renderGlobalDownloadBtn(); } catch (e) {}
+        try { renderGlobalDownloadBtn(); initFilenameTooltip(); } catch (e) {}
         const pres = document.querySelectorAll('pre');
         const groups = new Map();
 
@@ -202,10 +350,22 @@
 
                 // 3. הוספת כפתור הורדה בודד
                 if (actionContainer && copyBtn) {
-                    const filename = getFilenameForBlock(pre);
                     if (!actionContainer.querySelector('.gemini-ext-single')) {
-                        const singleBtn = document.createElement('button'); singleBtn.className = 'gemini-ext-btn gemini-ext-single'; singleBtn.title = `הורד קובץ: ${filename}`; singleBtn.appendChild(createDownloadIcon());
-                        singleBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); triggerDownload(extractCode(pre), filename); singleBtn.replaceChildren(createCheckIconGreen()); setTimeout(() => singleBtn.replaceChildren(createDownloadIcon()), 2000); });
+                        const singleBtn = document.createElement('button');
+                        singleBtn.className = 'gemini-ext-btn gemini-ext-single';
+                        singleBtn.appendChild(createDownloadIcon());
+
+                        singleBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            triggerDownload(extractCode(pre), getFilenameForBlock(pre));
+                            singleBtn.replaceChildren(createCheckIconGreen());
+                            setTimeout(() => singleBtn.replaceChildren(createDownloadIcon()), 2000);
+                        });
+
+                        // חיבור הטולטיפ האינטראקטיבי
+                        singleBtn.addEventListener('mouseenter', () => showFilenameTooltip(singleBtn, pre));
+                        singleBtn.addEventListener('mouseleave', scheduleHideFilenameTooltip);
 
                         const refNode = actionContainer.querySelector('.gemini-ext-toggle') || copyBtn;
                         actionContainer.insertBefore(singleBtn, refNode);
