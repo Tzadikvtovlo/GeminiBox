@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         GeminiBox
 // @namespace    http://tampermonkey.net/
-// @version      2.4
+// @version      2.5
 // @description  מסגרת עבה ונוכחת, כפתורים לבנים ועבים בשורה אחת חלקה, העלמה הרמטית של כפתורי ייצוא מיותרים, וטולטיפ אינטראקטיבי לשינוי שם קובץ.
 // @author       צדיק וטוב לו וההודי של gemini
 // @match        https://gemini.google.com/*
 // @updateURL    https://raw.githubusercontent.com/Tzadikvtovlo/GeminiBox/main/GeminiBox.user.js
 // @downloadURL  https://raw.githubusercontent.com/Tzadikvtovlo/GeminiBox/main/GeminiBox.user.js
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=gemini.google.com
+// @icon         https://www.google.com/s2/favicons?sz=256&domain=gemini.google.com
 // @grant        GM_addStyle
 // ==/UserScript==
 
